@@ -16,7 +16,7 @@ const distanceMap = (map, froms, tpMode = 0, entryDist = 0, wall = '#', path = '
             dist: entryDist
         }));
 
-    while (cur = stack.pop()) {
+    while (cur = stack.shift()) {
         let [cx, cy] = cur.pos;
 
         if (filled[cy][cx] <= cur.dist) continue;
