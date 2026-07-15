@@ -1,7 +1,6 @@
-// generic optimistic brute-force solution for P3, runs in ~15 minutes while run in parallel
 // see transpiled.meta for the meta code of the problem
 // see script.opt.js for (non-generic) transcription
-// TBD better generic solution
+// by watching the values one observes the pattern
 
 Object.defineProperty(Array.prototype, 'chunk', {
     value: function(chunkSize) {
@@ -142,38 +141,46 @@ const run2 = (lines, r0max = 99, r1 = 0) => {
         regs[0] = r0;
         regs[1] = r1;
         let res = run(lines, regs);
-        //console.log(r0, res.exitCode)
         if (res.exitCode === EXIT_CODE.INF_LOOP) loops++;
+    }
+    return loops;
+}
+
+const run3 = (lines, r0max = 99, r1 = 0) => {
+    let loops = 0, arr = [];
+    for (let r0 = 0; r0 <= r0max; r0++) {
+        let regs = new Uint16Array(16).fill(0);
+        regs[0] = r0;
+        regs[1] = r1;
+        let res = run(lines, regs);
+        //console.log(r0, res.exitCode);
+        if (res.exitCode === EXIT_CODE.INF_LOOP) {
+            loops++;
+            arr.push(r0)
+        }
+    }
+    //console.log(arr);
+    let diffs = [];
+    for (let i = 1; i < arr.length; i++) {
+        diffs.push(arr[i] - arr[i-1]);
+    }
+    //console.log('diffs', diffs);
+    return loops;
+}
+
+// observation: listing the looping values and their respective diffs revealed pattern of max 16 length
+// therefor it is enough to count the looped ones in first 16 r0 values, then *4*1024 to have the full scale
+const fullScan = lines => {
+    let loops = 0;
+    for (let r1 = 0; r1 <= 15; r1++) {
+        loops += 4 * 1024 * run3(lines, 15, r1);
     }
     return loops;
 }
 
 console.log('p1', run(parse(input)))
 console.log('p2', run2(parse(input)))
-/*console.time('p3');
-//console.log('p3', run2(parse(input), 65535, 15))
-console.log('p3', run2(parse(input), 99, 0))
-console.timeEnd('p3');
-*/
+console.log('p3', fullScan(parse(input)))
 
 //console.log(transpile(parse(input)));
-/*
-just run all of that in parallel or redesign to worker
-r1
-0: 12288
-1: 0
-2: 65536
-3: 0
-4: 57344
-5: 4096
-6: 61440
-7: 4096
-8: 61440
-9: 8192
-10: 4096
-11: 0
-12: 45056
-13: 16384
-14: 57344
-15: 4096
-*/
+// originally I just run all of the full scans parallel :shrug:
