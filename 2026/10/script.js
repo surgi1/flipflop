@@ -1,6 +1,6 @@
 // see transpiled.meta for the meta code of the problem
 // see script.opt.js for (non-generic) transcription
-// by watching the values one observes the pattern
+// by watching the values one observes the pattern (it is only required to scan first 16 r0 values for any r1)
 
 Object.defineProperty(Array.prototype, 'chunk', {
     value: function(chunkSize) {
@@ -146,34 +146,12 @@ const run2 = (lines, r0max = 99, r1 = 0) => {
     return loops;
 }
 
-const run3 = (lines, r0max = 99, r1 = 0) => {
-    let loops = 0, arr = [];
-    for (let r0 = 0; r0 <= r0max; r0++) {
-        let regs = new Uint16Array(16).fill(0);
-        regs[0] = r0;
-        regs[1] = r1;
-        let res = run(lines, regs);
-        //console.log(r0, res.exitCode);
-        if (res.exitCode === EXIT_CODE.INF_LOOP) {
-            loops++;
-            arr.push(r0)
-        }
-    }
-    //console.log(arr);
-    let diffs = [];
-    for (let i = 1; i < arr.length; i++) {
-        diffs.push(arr[i] - arr[i-1]);
-    }
-    //console.log('diffs', diffs);
-    return loops;
-}
-
 // observation: listing the looping values and their respective diffs revealed pattern of max 16 length
-// therefor it is enough to count the looped ones in first 16 r0 values, then *4*1024 to have the full scale
+// therefor it is enough to count the inf looping ones in first 16 r0 values, then just multiply by 4*1024
 const fullScan = lines => {
     let loops = 0;
     for (let r1 = 0; r1 <= 15; r1++) {
-        loops += 4 * 1024 * run3(lines, 15, r1);
+        loops += 4096 * run2(lines, 15, r1);
     }
     return loops;
 }
