@@ -94,7 +94,6 @@ const grow = (tree, trees = []) => {
             console.log('couldnt find a rule for id', id, tree);
             return true;
         }
-        //console.log('growing', p, rule)
         // insert new sprouts
         growSprout(p, rule.topId, D.UP);
         growSprout(p, rule.leftId, D.LEFT);
@@ -109,17 +108,6 @@ const grow = (tree, trees = []) => {
 
     // sanitize: no stems on the same spot
     let stems = tree.parts.filter(p => p.type === P.STEM);
-    let sanitizedStems = [];
-
-    /*stems.forEach(p => {
-        let stemsAtSpot = sanitizedStems.findIndex(s => s.x === p.x && s.y === p.y);
-        if (stemsAtSpot === -1) {
-            sanitizedStems.push(p);
-        } else {
-            if (Number(sanitizedStems[stemsAtSpot].id) < Number(p.id)) sanitizedStems[stemsAtSpot].id = p.id;
-        }
-    })*/
-
     // sanitize: no sprouts at the stem spots
     sprouts = tree.parts.filter(p => p.type === P.SPROUT).filter(p => {
         let stemsAtSpot = stems.filter(stem => stem.x === p.x && stem.y === p.y);
@@ -140,31 +128,6 @@ const grow = (tree, trees = []) => {
     tree.age++;
 
     if (tree.age >= MAX_AGE) tree.state = STATE.DEAD;
-
-    // energy check
-    /*if (tree.age >= 5) {
-        let required = tree.parts.length * 3;
-        stems = tree.parts.filter(p => p.type === P.STEM);
-        let produced = stems.reduce((total, stem, i) => {
-            let base = Math.min(10, stem.y);
-            let stemsAbove = stems.filter(s => s.x === stem.x && s.y > stem.y).length;
-
-            if (stemsAbove < 3 && trees.length > 0) {
-                let allParts = trees.filter(t => t.id !== tree.id).map(t => t.parts).flat();
-                stemsAbove += allParts
-                    .filter(s => s.type === P.STEM)
-                    .filter(s => s.x === stem.x && s.y > stem.y).length;
-            }
-
-            let mult = Math.max(0, 3 - stemsAbove);
-            return total + base*mult;
-        }, 0);
-
-        //console.log('energy check at age', tree.age, 'required:', required, 'produced:', produced, 'mass:', tree.parts.length, tree);
-        if (required > produced) tree.state = STATE.DEAD;
-    }*/
-
-    //console.log('tree aged');
 }
 
 const encheck = (tree, trees = []) => {
