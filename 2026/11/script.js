@@ -109,9 +109,9 @@ const grow = (tree, trees = []) => {
 
     // sanitize: no stems on the same spot
     let stems = tree.parts.filter(p => p.type === P.STEM);
-    /*let sanitizedStems = [];
+    let sanitizedStems = [];
 
-    stems.forEach(p => {
+    /*stems.forEach(p => {
         let stemsAtSpot = sanitizedStems.findIndex(s => s.x === p.x && s.y === p.y);
         if (stemsAtSpot === -1) {
             sanitizedStems.push(p);
@@ -142,6 +142,35 @@ const grow = (tree, trees = []) => {
     if (tree.age >= MAX_AGE) tree.state = STATE.DEAD;
 
     // energy check
+    /*if (tree.age >= 5) {
+        let required = tree.parts.length * 3;
+        stems = tree.parts.filter(p => p.type === P.STEM);
+        let produced = stems.reduce((total, stem, i) => {
+            let base = Math.min(10, stem.y);
+            let stemsAbove = stems.filter(s => s.x === stem.x && s.y > stem.y).length;
+
+            if (stemsAbove < 3 && trees.length > 0) {
+                let allParts = trees.filter(t => t.id !== tree.id).map(t => t.parts).flat();
+                stemsAbove += allParts
+                    .filter(s => s.type === P.STEM)
+                    .filter(s => s.x === stem.x && s.y > stem.y).length;
+            }
+
+            let mult = Math.max(0, 3 - stemsAbove);
+            return total + base*mult;
+        }, 0);
+
+        //console.log('energy check at age', tree.age, 'required:', required, 'produced:', produced, 'mass:', tree.parts.length, tree);
+        if (required > produced) tree.state = STATE.DEAD;
+    }*/
+
+    //console.log('tree aged');
+}
+
+const encheck = (tree, trees = []) => {
+    if (tree.state !== STATE.ALIVE) return;
+
+    // energy check
     if (tree.age >= 5) {
         let required = tree.parts.length * 3;
         stems = tree.parts.filter(p => p.type === P.STEM);
@@ -163,12 +192,11 @@ const grow = (tree, trees = []) => {
         //console.log('energy check at age', tree.age, 'required:', required, 'produced:', produced, 'mass:', tree.parts.length, tree);
         if (required > produced) tree.state = STATE.DEAD;
     }
-
-    //console.log('tree aged');
 }
 
+
 let el = document.getElementById('root');
-let zoom = 11;
+let zoom = 4;
 
 const draw = (tree) => {
     let s = '';
@@ -185,7 +213,7 @@ const drawAll = (trees) => {
     trees.forEach(tree => {
         tree.parts.forEach(p => {
             let x = (p.x + 100)*zoom;
-            let y = (80 - p.y)*zoom;
+            let y = (90 - p.y)*zoom;
             s += '<div class="cell ' + (p.type === P.SPROUT ? 'sprout' : '') + '" style="top:' + y + 'px;left:' + x + 'px">&nbsp;</div>' + '\n';
         })
     })
@@ -195,14 +223,47 @@ const drawAll = (trees) => {
 const run = (trees, interference = false) => {
     while (trees.filter(t => t.state === STATE.ALIVE).length > 0) {
         trees.forEach(t => grow(t, interference ? trees : []));
+        trees.forEach(t => encheck(t, interference ? trees : []));
     }
 
     //draw(trees[0]);
     drawAll(trees);
-    console.log(trees);
+    //console.log(trees);
     return trees.reduce((a, t) => a + t.parts.length, 0);
 }
 
-//console.log('p1', run(parse(input)))
+const run3 = (trees, gens = 1) => {
+    run(trees, true);
+    // create new trees
+    // add original tree id to the sprouts
+    trees.forEach(t => t.parts.forEach(p => p.origTreeId = t.id));
+    // get x coords of the sprouts
+    let sprouts = trees.map(t => t.parts).flat().filter(p => p.type === P.SPROUT)
+    let xCoords = [...new Set(sprouts.map(s => s.x))].sort((a, b) => a-b);
+    let newTrees = [];
+    xCoords.forEach(x => {
+        // get all parts that have the same x coord
+        let parts = sprouts.filter(s => s.x === x).sort((a, b) => b.y-a.y);
+        let p = parts[0];
+        newTrees.push({
+            id: newTrees.length,
+            rules: trees[p.origTreeId].rules,
+            parts: [{
+                type: P.SPROUT,
+                id: '00',
+                x: p.x,
+                y: 1, // effective height
+            }], // init
+            age: 0,
+            state: STATE.ALIVE,
+        })
+    })
+    //console.log(newTrees);
+    // and set sail
+    if (gens > 0) return run3(newTrees, gens-1);
+    return run(newTrees, true);
+}
+
+console.log('p1', run(parse(input)))
 console.log('p2', run(parse(input), true))
-// 6564 incorrect, but maybe the puzzle is bugged
+console.log('p3', run3(parse(input)))
