@@ -1,6 +1,12 @@
 let inputt = `    02          XX          00
 01  00  XX  01  01  02  XX  02  XX`
 
+let inputt2 = `    01          XX          XX
+02  00  XX  XX  01  00  02  02  XX
+
+    02          XX          00
+01  00  XX  01  01  02  XX  02  XX`
+
 let input = `    06          08          14          07          05          XX          08          14          15          05          01          08          03          09          02          XX
 03  00  XX  14  01  XX  07  02  01  05  03  XX  10  04  XX  02  05  04  XX  06  07  XX  07  XX  XX  08  XX  06  09  00  01  10  13  02  11  02  XX  12  04  02  13  13  07  14  02  XX  15  02
 

@@ -39,15 +39,16 @@ const parseTreeRules = lit => {
     })
 }
 
-const parse = input => input.split('\n\n').map(lit => ({
+const parse = input => input.split('\n\n').map((lit, id) => ({
     rules: parseTreeRules(lit),
     parts: [{
         type: P.SPROUT,
         id: '00',
-        x: 0,
+        x: id*10,
         y: 1, // effective height
     }], // init
     age: 0,
+    id: id,
     state: STATE.ALIVE,
 }))
 
@@ -55,7 +56,7 @@ const parse = input => input.split('\n\n').map(lit => ({
 // The resulting sprout with the highest DNA id will take priority and grow into that location
 // (not the sprouts it came from, it's about the sprout ids that try to appear there).
 
-const grow = tree => {
+const grow = (tree, trees = []) => {
     if (tree.state !== STATE.ALIVE) return;
 
     const growSprout = (p, newId, dir) => {
@@ -67,6 +68,13 @@ const grow = tree => {
         let blockages = tree.parts
                 .filter(p => p.type === P.STEM)
                 .filter(p => p.x === x && p.y === y);
+
+        if (blockages.length === 0 && trees.length > 0) {
+            let allParts = trees.filter(t => t.id !== tree.id).map(t => t.parts).flat();
+            blockages = allParts
+                //.filter(p => p.type === P.STEM)
+                .filter(p => p.x === x && p.y === y);
+        }
 
         if (blockages.length > 0) {
             //console.log('blockages for dir', DIRS[dir], blockages);
@@ -140,6 +148,14 @@ const grow = tree => {
         let produced = stems.reduce((total, stem, i) => {
             let base = Math.min(10, stem.y);
             let stemsAbove = stems.filter(s => s.x === stem.x && s.y > stem.y).length;
+
+            if (stemsAbove < 3 && trees.length > 0) {
+                let allParts = trees.filter(t => t.id !== tree.id).map(t => t.parts).flat();
+                stemsAbove += allParts
+                    .filter(s => s.type === P.STEM)
+                    .filter(s => s.x === stem.x && s.y > stem.y).length;
+            }
+
             let mult = Math.max(0, 3 - stemsAbove);
             return total + base*mult;
         }, 0);
@@ -164,14 +180,29 @@ const draw = (tree) => {
     el.innerHTML = s;
 }
 
-const run = (trees) => {
+const drawAll = (trees) => {
+    let s = '';
+    trees.forEach(tree => {
+        tree.parts.forEach(p => {
+            let x = (p.x + 100)*zoom;
+            let y = (80 - p.y)*zoom;
+            s += '<div class="cell ' + (p.type === P.SPROUT ? 'sprout' : '') + '" style="top:' + y + 'px;left:' + x + 'px">&nbsp;</div>' + '\n';
+        })
+    })
+    el.innerHTML = s;
+}
+
+const run = (trees, interference = false) => {
     while (trees.filter(t => t.state === STATE.ALIVE).length > 0) {
-        trees.forEach(t => grow(t));
+        trees.forEach(t => grow(t, interference ? trees : []));
     }
 
     //draw(trees[0]);
+    drawAll(trees);
     console.log(trees);
     return trees.reduce((a, t) => a + t.parts.length, 0);
 }
 
-console.log('p1', run(parse(input)))
+//console.log('p1', run(parse(input)))
+console.log('p2', run(parse(input), true))
+// 6564 incorrect, but maybe the puzzle is bugged
