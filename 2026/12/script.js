@@ -81,7 +81,7 @@ const run = ([hits, cards1d], dim = 2) => {
         let bingos = 0;
 
         for (const vect of DIRS) {
-            let fullVect = [0, ...vect]; // added first value to index the card diff (0)
+            let fullVect = [0, ...vect]; // added first value to index the top level structure (card, cube, hypercube, ...) shift (0)
 
             let fullVectBW = mulVect(fullVect, -1);
 
