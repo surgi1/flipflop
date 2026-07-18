@@ -9,7 +9,7 @@ Object.defineProperty(Array.prototype, 'chunk', {
 });
 
 const parse = input => input.split('\n\n').map(section => section.split('\n').join(' ').split(' ').map(Number))
-const vectInside = (vect) => vect.every((v, i) => i === 0 || (v >= 0 && v < 5));
+const vectInside = (vect) => vect.every((v, i) => i === 0 || (v >= 0 && v < 5)); // first coord indexes top level objects, e.g. cards, cubes, hypercubes. It shouldn't be checked for out of bounds here
 const addVect = (a, b) => a.map((v, i) => v + b[i]);
 const mulVect = (a, n) => a.map((v, i) => n * v);
 
