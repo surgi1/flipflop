@@ -82,9 +82,7 @@ const run = ([hits, cards1d], dim = 2) => {
 
         for (const vect of DIRS) {
             let fullVect = [0, ...vect]; // added first value to index the top level structure (card, cube, hypercube, ...) shift (0)
-
             let fullVectBW = mulVect(fullVect, -1);
-
             let tmpCoords = coords.slice(0);
 
             while (vectInside( addVect(tmpCoords, fullVectBW) )) {
