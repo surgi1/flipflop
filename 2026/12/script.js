@@ -14,12 +14,7 @@ const addVect = (a, b) => a.map((v, i) => v + b[i]);
 const mulVect = (a, n) => a.map((v, i) => n * v);
 
 const run = ([hits, cards1d], dim = 2) => {
-    const turn = nr => cards = cards.map(card => {
-        card = card.map(slice => slice.map( row => row.map(v => v == nr ? 0 : v) ) )
-        return card;
-    })
-
-    // next I need generic-dimensional walk thru the cards array while keeping used coords that will later serve as pointers in the multi-dimensional card(s) array
+    // generic-dimensional walk thru the cards array while keeping used coords that will later serve as pointers in the multi-dimensional card(s) array
     // purpose is to get coords of just marked number
     const getHitCoords = (nr) => {
         let hitCoords = false;
@@ -41,7 +36,6 @@ const run = ([hits, cards1d], dim = 2) => {
     }
 
     const setVal = (coords, val, coordId = 0, tmp = cards) => {
-        //if (Array.isArray(tmp[ coords[coordId] ])) {
         if (coordId < coords.length-1) {
             setVal(coords, val, coordId+1, tmp[ coords[coordId] ]);
         } else {
@@ -50,7 +44,6 @@ const run = ([hits, cards1d], dim = 2) => {
     }
 
     const getVal = (coords, coordId = 0, tmp = cards) => {
-        //if (Array.isArray(tmp[ coords[coordId] ])) {
         if (coordId < coords.length-1) {
             return getVal(coords, coordId+1, tmp[ coords[coordId] ]);
         } else {
@@ -66,23 +59,21 @@ const run = ([hits, cards1d], dim = 2) => {
     let DIRS = [];
 
     const createDirRecur = (tmp, dim) => {
-        //console.log('createDirRecur called', tmp, dim)
         if (dim === 0) return DIRS.push(tmp);
         [-1, 0, 1].forEach(v => createDirRecur([...tmp, v], dim-1));
     }
 
     createDirRecur([], dim);
-    DIRS = DIRS.filter(vect => vect.some(v => v !== 0));
+    DIRS = DIRS.filter(vect => vect.some(v => v !== 0)); // discard all-zero vect
 
     let res = false, totalBingos = 0;
 
     for (let nr of hits) {
         let coords = getHitCoords(nr);
-        //console.log('hit coords for', nr, coords);
-        // now we have the coords of a hit
+
         if (coords === false) return true;
-        // let's mark it
-        setVal(coords, -1);
+        
+        setVal(coords, -1); // let's mark it
 
         // now, for each directional vector (from DIRS), let's get to the edge of the object (needs to account correctly for dimension param)
         // and then move forward 5 times and count values
@@ -90,7 +81,7 @@ const run = ([hits, cards1d], dim = 2) => {
         let bingos = 0;
 
         for (const vect of DIRS) {
-            let fullVect = [0, ...vect]; // including indexing the card
+            let fullVect = [0, ...vect]; // added first value to index the card diff (0)
 
             let fullVectBW = mulVect(fullVect, -1);
 
@@ -99,8 +90,6 @@ const run = ([hits, cards1d], dim = 2) => {
             while (vectInside( addVect(tmpCoords, fullVectBW) )) {
                 tmpCoords = addVect(tmpCoords, fullVectBW);
             }
-
-            //console.log('processing direction', vect, '; search will be starting from coords', tmpCoords);
 
             let marked = 0;
             
