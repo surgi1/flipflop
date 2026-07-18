@@ -16,7 +16,7 @@ const mulVect = (a, n) => a.map((v, i) => n * v);
 const run = ([hits, cards1d], dim = 2) => {
     // generic-dimensional walk thru the cards array while keeping used coords that will later serve as pointers in the multi-dimensional card(s) array
     // purpose is to get coords of just marked number
-    const getHitCoords = (nr) => {
+    const getValCoords = (nr) => {
         let hitCoords = false;
 
         const recur = (coords, tmp) => {
@@ -69,7 +69,7 @@ const run = ([hits, cards1d], dim = 2) => {
     let res = false, totalBingos = 0;
 
     for (let nr of hits) {
-        let coords = getHitCoords(nr);
+        let coords = getValCoords(nr);
 
         if (coords === false) return true;
         
